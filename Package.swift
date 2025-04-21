@@ -9,7 +9,10 @@ let package = Package(
     products: [
         .library(
             name: "RateLimiter",
-            targets: ["RateLimiter"])
+            targets: ["RateLimiter"]),
+        .library(
+            name: "RateLimiterHummingbird",
+            targets: ["RateLimiterHummingbird"]),
     ],
     dependencies: [
         .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),

@@ -2,13 +2,18 @@ import Foundation
 import Logging
 
 public actor PublicApiRateLimiter {
-    private let limitPerSecond = 15
+    /// The limit per second.
+    private let limitPerSecond: Int
+    /// The memory store.
     private var memory: [String: [TimeInterval]] = [:]
 
-    // Make config properties nonisolated constants if they don't change
+    // Make config properties nonisolated constants as they don't change
     // This allows access from the detached task without awaiting the actor.
-    private nonisolated let cleanupInterval: TimeInterval = 60.0  // Clean up every 60 seconds
-    private nonisolated let entryTTL: TimeInterval = 300.0  // Remove IPs inactive for 5 minutes
+    
+    /// The interval to clean up stale entries.
+    private nonisolated let cleanupInterval: TimeInterval
+    /// The time to live for entries.
+    private nonisolated let entryTTL: TimeInterval
 
     // Task handle - now initialized lazily
     private var cleanupTask: Task<Void, Never>?
@@ -17,8 +22,26 @@ public actor PublicApiRateLimiter {
 
     let logger: Logger
 
-    public init(logger: Logger) {
+    public struct Configuration: Sendable {
+        /// The limit per second.
+        public let limitPerSecond: Int
+        /// The interval to clean up stale entries.
+        public let cleanupInterval: TimeInterval
+        /// The time to live for entries.
+        public let entryTTL: TimeInterval
+
+        public init(limitPerSecond: Int = 15, cleanupInterval: TimeInterval = 60.0, entryTTL: TimeInterval = 300.0) {
+            self.limitPerSecond = limitPerSecond
+            self.cleanupInterval = cleanupInterval
+            self.entryTTL = entryTTL
+        }
+    }
+
+    public init(logger: Logger, configuration: Configuration = Configuration()) {
         self.logger = logger
+        self.limitPerSecond = configuration.limitPerSecond
+        self.cleanupInterval = configuration.cleanupInterval
+        self.entryTTL = configuration.entryTTL
     }
 
     deinit {

@@ -12,9 +12,9 @@ public struct InMemoryRateLimitMiddleware<Context: IPRequestContext>: RouterMidd
     let logger: Logger
     let rateLimiter: PublicApiRateLimiter
 
-    init(logger: Logger) {
+    public init(logger: Logger, configuration: PublicApiRateLimiter.Configuration = PublicApiRateLimiter.Configuration()) {
         self.logger = logger
-        self.rateLimiter = PublicApiRateLimiter(logger: logger)
+        self.rateLimiter = PublicApiRateLimiter(logger: logger, configuration: configuration)
     }
 
     public func handle(_ request: Request, context: Context, next: (Request, Context) async throws -> Response) async throws -> Response {
